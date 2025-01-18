@@ -1,90 +1,120 @@
-# FreeRTOS FPGA Seven Segment Display Control
+# FreeRTOS FPGA Application: Multi-Process Communication and Display Control
 
-[**Video Demonstrativ pe YouTube**](https://www.youtube.com/watch?v=UFmV7QaoTqo)
+[**Video Demonstrativ pe YouTube**](https://www.youtube.com/watch?v=LCpn7amrAR4)
 
-Acest proiect implementează un controler pentru două afișaje cu șapte segmente utilizând placa **XILINX XC7S50-CSG324A SPARTAN 7 FPGA**. Aplicația utilizează un temporizator pentru a declanșa actualizări regulate ale afișajelor și gestionează logica acestora folosind un grup de evenimente pentru sincronizarea intrărilor și comunicarea serială.
+This project demonstrates a FreeRTOS-based application for the Xilinx XC7S50-CSG324A Spartan-7 FPGA. The application implements:
 
-Pentru mai multe detalii tehnice și explicații, consultă documentația disponibilă în repository: **Documentatie_v2.docx**.
-
----
-
-## **Descriere Generală**
-
-Proiectul implementează un sistem embedded care:
-- Actualizează două afișaje cu șapte segmente la fiecare **500 ms** folosind un temporizator.
-- Detectează modificările de stare ale întrerupătoarelor și le reflectă în afișaj.
-- Transmite valoarea curentă aflată pe afișaj printr-o interfață de comunicație serială.
-
-Acest sistem este proiectat să ruleze pe un FPGA Spartan 7 folosind un design hardware controlat de FreeRTOS. Dezvoltarea software a fost realizată folosind **Vitis Classic 2023.2**.
+1. **Switch State Monitoring**: Reads and processes the states of 5 switches.
+2. **LED State Control**: Updates the states of 3 LEDs based on switch inputs.
+3. **7-Segment Display Control**: Displays two digits based on switch states.
+4. **Serial Communication**: Combines data from multiple processes and outputs it to the serial console.
 
 ---
 
-## **Caracteristici Principale**
+## Features
 
-1. **Control temporizat**: Actualizare regulată a afișajelor cu șapte segmente.
-2. **Detecție a schimbărilor**: Monitorizarea întrerupătoarelor pentru schimbări de stare.
-3. **Afișare dinamică**: Valoarea afișată este generată, transmisă și actualizată în timp real.
-4. **Sincronizare prin FreeRTOS**: Task-uri separate pentru afișaj, logica întrerupătoarelor și comunicația serială.
-5. **Codificare BCD**: Folosirea unui tabel de codificare pentru controlul segmentelor afișajului.
+### Multi-Process Design
+The application consists of four FreeRTOS tasks:
 
----
+- **Process 1**: Reads switch states and sends them to a queue.
+- **Process 2**: Reads LED states and sends them to another queue.
+- **Process 3**: Updates 7-segment display values based on the received data.
+- **Process 4**: Outputs the combined data to the UART console.
 
-## **Arhitectura Sistemului**
-
-### **Blocuri Funcționale**
-1. **Temporizator (Timer)**:
-   - Declanșează actualizarea afișajelor la fiecare **500 ms**.
-2. **Proc1 - Logică întrerupătoare**:
-   - Monitorizează schimbările de stare ale întrerupătoarelor.
-   - Utilizează un **grup de evenimente** pentru notificare.
-3. **Task-uri de trimitere și recepție**:
-   - **TxTask**: Generează valori noi și le trimite pentru afișare.
-   - **RxTask**: Preia valorile generate și le afișează pe display.
-
-### **Fluxul de Date**
-1. Valorile sunt generate de **TxTask**.
-2. Sunt transmise către **RxTask** printr-o **coadă**.
-3. **RxTask** afișează valoarea și gestionează logica segmentelor pe baza intrărilor din întrerupătoare.
+### Hardware Interaction
+- **GPIO Interfaces**:
+  - Reads inputs from switches.
+  - Controls LEDs and 7-segment displays.
+- **Peripheral Initialization**:
+  - Configures GPIO peripherals for switches, LEDs, and 7-segment displays.
 
 ---
 
-## **Hardware Utilizat**
+## Code Structure
 
-1. **FPGA Spartan 7 (XC7S50-CSG324A)**:
-   - Platforma principală de procesare.
-2. **Afișaje cu șapte segmente (2 bucăți)**:
-   - Tip: Common Cathode.
-3. **Module GPIO**:
-   - Configurate pentru întrerupătoare și afișaj.
-4. **Întrerupătoare**:
-   - Pentru schimbarea stării afișajului.
+### Global Variables
+- **`SwitchStates`**: Structure to hold switch states.
+- **`LDStates`**: Structure to hold LED states.
+- **`segmentEncoding`**: Array to encode digits for 7-segment display (common cathode).
 
----
+### Queues
+- **`xQueue1`**: Queue for switch states.
+- **`xQueue2`**: Queue for LED states.
+- **`xQueue3`**: Queue for 7-segment display values.
 
-## **Software Utilizat**
-
-- **Vitis Classic 2023.2**:
-  - Dezvoltarea și depanarea aplicației software.
-- **FreeRTOS**:
-  - Gestionarea task-urilor și sincronizării evenimentelor.
-
----
-
-## **Funcționalități Implementate**
-
-1. **Task-uri FreeRTOS**:
-   - **TxTask**: Trimiterea valorii generate.
-   - **RxTask**: Preluarea valorii și afișarea acesteia.
-   - **Proc1**: Monitorizarea și gestionarea întrerupătoarelor.
-2. **Temporizator**:
-   - Interval de **500 ms** pentru actualizarea afișajelor.
-3. **Evenimente și Cozi**:
-   - Sincronizare între task-uri folosind grupuri de evenimente și cozi.
-4. **Control afișaj**:
-   - Codificare BCD pentru afișarea numerelor de la 0 la 99.
+### Key Functions
+1. **`init_perif()`**: Initializes GPIO peripherals for switches, LEDs, and 7-segment displays.
+2. **`Proces1`**: Reads switch states and updates the LED states.
+3. **`Proces2`**: Reads LED states and forwards them.
+4. **`Proces3`**: Updates 7-segment display values based on queue data.
+5. **`Proces4`**: Outputs all data to the UART console.
 
 ---
 
-## **Documentație Suplimentară**
+## Requirements
 
-Pentru mai multe informații despre arhitectura proiectului, te rog consultă fișierul **Documentatie_v2.docx** din repository.
+### Hardware
+1. **Xilinx Spartan-7 FPGA (XC7S50-CSG324A)**
+2. **Switch Inputs** (5 switches connected to GPIO)
+3. **LED Outputs** (3 LEDs connected to GPIO)
+4. **7-Segment Displays** (2 displays controlled via GPIO)
+
+### Software
+1. **FreeRTOS**: Real-Time Operating System for task scheduling.
+2. **Xilinx SDK**: For application development and peripheral configuration.
+
+---
+
+## Implementation Details
+
+### Task Functionality
+
+#### **Process 1: Switch State Monitoring**
+- Reads the state of 5 switches from GPIO.
+- Updates the states of LEDs (LEDs 2–4 mirror switches 2–4).
+- Sends switch states to `xQueue1`.
+
+#### **Process 2: LED State Monitoring**
+- Reads the states of 3 LEDs from GPIO.
+- Sends LED states to `xQueue2`.
+
+#### **Process 3: 7-Segment Display Update**
+- Reads switch states from `xQueue1`.
+- Updates two 7-segment displays based on the first two switch states.
+
+#### **Process 4: Serial Communication**
+- Reads data from `xQueue1` and `xQueue2`.
+- Combines switch, LED, and 7-segment display states.
+- Outputs formatted data to the UART console.
+
+---
+
+## Example Serial Output
+
+When running the application, the following information is displayed on the UART console:
+
+```
+--- Citesc valorile switch-urilor ---
+Starile intrerupatoarelor sunt:
+SW0 = 1
+SW1 = 0
+SW2 = 1
+SW3 = 0
+SW4 = 1
+
+Starile LED-urilor 2,3,4 sunt:
+LD2 = 1
+LD3 = 0
+LD4 = 1
+
+Cifra de pe Display dreapta = 1
+Cifra de pe Display stanga = 0
+```
+
+---
+
+## File Structure
+- **`main.c`**: Contains the main application code.
+- **`README.md`**: Documentation for the application.
+
+---
