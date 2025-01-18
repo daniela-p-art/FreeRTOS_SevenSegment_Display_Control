@@ -1,6 +1,6 @@
 # FreeRTOS FPGA Seven Segment Display Control
 
-[**Video Demonstrativ pe YouTube**](https://www.youtube.com/watch?v=UFmV7QaoTqo)
+[**Video Demonstrativ pe YouTube**](https://youtu.be/Rv9mmJlA4cA)
 
 Acest proiect implementează un controler pentru două afișaje cu șapte segmente utilizând placa **XILINX XC7S50-CSG324A SPARTAN 7 FPGA**. Aplicația utilizează un temporizator pentru a declanșa actualizări regulate ale afișajelor și gestionează logica acestora folosind un grup de evenimente pentru sincronizarea intrărilor și comunicarea serială.
 
