@@ -1,6 +1,6 @@
 # FreeRTOS FPGA Application: Multi-Process Communication and Display Control
 
-[**Video Demonstrativ pe YouTube**](https://www.youtube.com/watch?v=LCpn7amrAR4)
+[**Demonstration Video on YouTube**](https://www.youtube.com/watch?v=LCpn7amrAR4)
 
 This project demonstrates a FreeRTOS-based application for the Xilinx XC7S50-CSG324A Spartan-7 FPGA. The application implements:
 
